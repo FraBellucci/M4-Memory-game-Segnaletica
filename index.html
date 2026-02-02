@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory - Segnaletica di Sicurezza</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 800px;
+            height: 550px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* PAGINA ISTRUZIONI */
+        #instructions-page {
+            padding: 40px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .instructions-header {
+            text-align: center;
+        }
+
+        .instructions-header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .instructions-header p {
+            color: #666;
+            font-size: 18px;
+        }
+
+        .instructions-content {
+            background: #f8f9ff;
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .instructions-content h2 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .instructions-content h2::before {
+            content: "🎴";
+            margin-right: 10px;
+            font-size: 22px;
+        }
+
+        .instructions-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions-list li {
+            padding: 12px 0 12px 30px;
+            color: #555;
+            font-size: 15px;
+            line-height: 1;
+            position: relative;
+            text-align: left;
+        }
+
+        .instructions-list li::before {
+            content: "▶";
+            color: #667eea;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            top: 12px;
+        }
+
+        .start-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            align-self: center;
+        }
+
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        /* PAGINA GIOCO */
+        #game-page {
+            display: none;
+            padding: 20px;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-top: 2px solid #eee;
+        }
+
+        .game-title {
+            flex: 1;
+        }
+
+        .game-title h1 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .game-title p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-restart-small {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-restart-small:hover {
+            background: #ffb300;
+            transform: translateY(-2px);
+        }
+
+        .btn-close-small {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-close-small:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        /* STATUS BAR */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9ff;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-size: 20px;
+        }
+
+        .timer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .timer-value {
+            color: #28a745;
+            font-size: 24px;
+        }
+
+        /* GRIGLIA MEMORY */
+        .memory-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 15px;
+        }
+
+        /* CARD MEMORY */
+        .memory-card {
+            background: white;
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+
+        .card-back,
+        .card-front {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backface-visibility: hidden;
+            transition: transform 0.6s;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 32px;
+        }
+
+        .card-front {
+            background: white;
+            transform: rotateY(180deg);
+            padding: 10px;
+        }
+
+        .card-front img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        /* CARD FLIPPED */
+        .memory-card.flipped .card-back {
+            transform: rotateY(180deg);
+        }
+
+        .memory-card.flipped .card-front {
+            transform: rotateY(0deg);
+        }
+
+        /* CARD MATCHED */
+        .memory-card.matched {
+            background: #d4edda;
+            border-color: #28a745;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .memory-card.matched:hover {
+            transform: none;
+        }
+
+        .memory-card.matched .card-back {
+            background: #28a745;
+        }
+
+        /* MODALE COMPLETAMENTO */
+        .completion-modal {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .completion-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            animation: modalPop 0.5s ease-out;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .completion-content h2 {
+            color: #28a745;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .completion-content h2::before {
+            content: "🎉";
+            display: block;
+            font-size: 64px;
+            margin-bottom: 10px;
+        }
+
+        .stats-result {
+            background: #d4edda;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+        }
+
+        .stats-result p {
+            color: #155724;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .completion-content > p {
+            color: #666;
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-restart {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-restart:hover {
+            background: #ffb300;
+            transform: translateY(-2px);
+        }
+
+        .btn-close {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-close:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- PAGINA ISTRUZIONI -->
+        <div id="instructions-page">
+            <div class="instructions-header">
+                <h1>🎴 Memory - Segnaletica di Sicurezza</h1>
+                <p>Trova tutte le coppie di cartelli uguali!</p>
+            </div>
+
+            <div class="instructions-content">
+                <h2>Come si gioca</h2>
+                <ul class="instructions-list">
+                    <li>Clicca su una carta per scoprirla</li>
+                    <li>Clicca su una seconda carta per cercare la coppia uguale</li>
+                    <li>Se le due carte sono<strong> uguali</strong>, restano scoperte</li>
+                    <li>Se sono<strong> diverse</strong>, si girano nuovamente dopo 1 secondo</li>
+                    <li>Trova tutte le<strong> 10 coppie</strong> di segnaletica di sicurezza!</li>
+                    <li>Cerca di completare il gioco nel<strong> minor tempo possibile</strong> con il<strong> minor numero di mosse</strong>!</li>
+                </ul>
+            </div>
+
+            <button class="start-button" onclick="startGame()">▶ Inizia a giocare</button>
+        </div>
+
+        <!-- PAGINA GIOCO -->
+        <div id="game-page">
+            <div class="game-header">
+                <div class="game-title">
+                    <h1>🎴 Memory - Segnaletica</h1>
+                    <p>Trova tutte le coppie!</p>
+                </div>
+                <div class="header-buttons">
+                    <button class="btn-small btn-restart-small" onclick="restartGame()">🔄 Ricomincia</button>
+                    <button class="btn-small btn-close-small" onclick="window.close()">← Torna al corso</button>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div class="stats">
+                    <div class="stat-item">
+                        <span>Coppie:</span>
+                        <span class="stat-value" id="pairs-found">0</span>/10
+                    </div>
+                    <div class="stat-item">
+                        <span>Mosse:</span>
+                        <span class="stat-value" id="moves">0</span>
+                    </div>
+                </div>
+                <div class="timer">
+                    <span>⏱️</span>
+                    <span class="timer-value" id="timer">0</span>s
+                </div>
+            </div>
+
+            <div class="memory-grid" id="memory-grid">
+                <!-- Le card verranno generate da JavaScript -->
+            </div>
+        </div>
+
+        <!-- MODALE COMPLETAMENTO -->
+        <div class="completion-modal" id="completion-modal">
+            <div class="completion-content">
+                <h2>Complimenti!</h2>
+                <div class="stats-result">
+                    <p>⏱️ Tempo: <span id="final-time">0</span>s</p>
+                    <p>🎯 Mosse: <span id="final-moves">0</span></p>
+                </div>
+                <p>Hai trovato tutte le coppie di segnaletica di sicurezza!<br><br>
+                Ora riconoscerai facilmente i cartelli negli ambienti di lavoro.</p>
+                <div class="modal-buttons">
+                    <button class="btn btn-restart" onclick="restartGame()">🔄 Gioca ancora</button>
+                    <button class="btn btn-close" onclick="window.close()">← Torna al corso</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATI SEGNALETICA (10 coppie = 20 carte)
+        const signImages = [
+            'uscita-emergenza.png',
+            'estintore.png',
+            'vietato-fumare.png',
+            'pericolo-elettrico.png',
+            'pronto-soccorso.png',
+            'obbligo-occhiali.png',
+            'pericolo-generico.png',
+            'caduta-dislivello.png',
+            'telefono-emergenza.png',
+            'non-potabile.png'
+        ];
+
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let canFlip = true;
+
+        function startGame() {
+            document.getElementById('instructions-page').style.display = 'none';
+            document.getElementById('game-page').style.display = 'flex';
+            initGame();
+        }
+
+        function initGame() {
+            // Reset variabili
+            matchedPairs = 0;
+            moves = 0;
+            timerSeconds = 0;
+            flippedCards = [];
+            canFlip = true;
+
+            document.getElementById('pairs-found').textContent = '0';
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('timer').textContent = '0';
+
+            // Crea array di carte (ogni immagine 2 volte)
+            cards = [];
+            signImages.forEach(img => {
+                cards.push({ image: img, id: Math.random() });
+                cards.push({ image: img, id: Math.random() });
+            });
+
+            // Mescola le carte
+            cards = cards.sort(() => Math.random() - 0.5);
+
+            // Genera la griglia
+            const grid = document.getElementById('memory-grid');
+            grid.innerHTML = '';
+
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'memory-card';
+                cardElement.dataset.cardId = card.id;
+                cardElement.dataset.image = card.image;
+
+                cardElement.innerHTML = `
+                    <div class="card-back">?</div>
+                    <div class="card-front">
+                        <img src="images/${card.image}" alt="Segnaletica">
+                    </div>
+                `;
+
+                cardElement.addEventListener('click', () => flipCard(cardElement));
+                grid.appendChild(cardElement);
+            });
+
+            // Avvia timer
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            timerSeconds++;
+            document.getElementById('timer').textContent = timerSeconds;
+        }
+
+        function flipCard(cardElement) {
+            // Controlli
+            if (!canFlip) return;
+            if (cardElement.classList.contains('flipped')) return;
+            if (cardElement.classList.contains('matched')) return;
+            if (flippedCards.length >= 2) return;
+
+            // Gira la carta
+            cardElement.classList.add('flipped');
+            flippedCards.push(cardElement);
+
+            // Se sono 2 carte girate, controlla
+            if (flippedCards.length === 2) {
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            canFlip = false;
+
+            const [card1, card2] = flippedCards;
+            const image1 = card1.dataset.image;
+            const image2 = card2.dataset.image;
+
+            if (image1 === image2) {
+                // COPPIA TROVATA!
+                setTimeout(() => {
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    matchedPairs++;
+                    document.getElementById('pairs-found').textContent = matchedPairs;
+
+                    flippedCards = [];
+                    canFlip = true;
+
+                    // Verifica completamento
+                    if (matchedPairs === 10) {
+                        completeGame();
+                    }
+                }, 500);
+            } else {
+                // NON COMBACIANO
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    canFlip = true;
+                }, 1000);
+            }
+        }
+
+        function completeGame() {
+            clearInterval(timerInterval);
+            document.getElementById('final-time').textContent = timerSeconds;
+            document.getElementById('final-moves').textContent = moves;
+            
+            setTimeout(() => {
+                document.getElementById('completion-modal').style.display = 'flex';
+            }, 500);
+        }
+
+        function restartGame() {
+            document.getElementById('completion-modal').style.display = 'none';
+            clearInterval(timerInterval);
+            initGame();
+        }
+    </script>
+</body>
+</html>
